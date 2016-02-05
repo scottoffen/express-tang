@@ -1,0 +1,23 @@
+{
+  "name": "express-tang",
+  "version": "1.0.0",
+  "description": "Simple express routing helper library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scottoffen/express-tang.git"
+  },
+  "keywords": [
+    "express",
+    "routing"
+  ],
+  "author": "Scott Offen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scottoffen/express-tang/issues"
+  },
+  "homepage": "https://github.com/scottoffen/express-tang#readme"
+}
