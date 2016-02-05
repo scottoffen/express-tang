@@ -4,7 +4,7 @@
   "description": "Simple express routing helper library",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "istanbul cover node_modules/mocha/bin/_mocha -- -R spec"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,13 @@
   "bugs": {
     "url": "https://github.com/scottoffen/express-tang/issues"
   },
-  "homepage": "https://github.com/scottoffen/express-tang#readme"
+  "homepage": "https://github.com/scottoffen/express-tang#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.4.5"
+  },
+  "dependencies": {
+    "debug": "^2.2.0"
+  }
 }
