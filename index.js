@@ -19,13 +19,17 @@ RouteFinder.SearchType =
 
 RouteFinder.prototype.register = function (app)
 {
-	if (!app) throw "express-route-finder: Missing required parameter: app (express application)";
-	if (this.RoutesRootDir === null) throw "express-route-finder: RoutesRootDir is not defined";
-	if (!RouteFinder.SearchType.hasOwnProperty(this.SearchType)) this.SearchType = RouteFinder.SearchType.breadthFirst;
+	if (!app || typeof app.add === 'undefined') throw "express-route-finder: Missing required parameter: app (express application)";
+
+	this.setRootDir(this.RoutesRootDir);
+	this.setFileNameMask(this.FileNameMask);
+	this.setSearchType(this.SearchType);
 
 	var routes = (this.SearchType === RouteFinder.SearchType.breadthFirst)
-		? breadthFirstSearch().bind(this)
-		: depthFirstSearch().bind(this);
+		? breadthFirstSearch.call(this)
+		: depthFirstSearch.call(this);
+
+	// should I sort them alphabetically by route before adding them?
 
 	routes.forEach(function (item)
 	{
@@ -36,7 +40,7 @@ RouteFinder.prototype.register = function (app)
 
 RouteFinder.prototype.setRootDir = function (rootdir)
 {
-	fs.access(rootdir, fs.R_OK);
+	fs.accessSync(rootdir, fs.R_OK);
 	debug("setting root search directory to " + rootdir);
 	this.RoutesRootDir = rootdir;
 	return this;
@@ -44,6 +48,7 @@ RouteFinder.prototype.setRootDir = function (rootdir)
 
 RouteFinder.prototype.setFileNameMask = function (filenamemask)
 {
+	if (filenamemask.constructor !== RegExp) throw "Not a valid regular expression (" + filenamemask + ")";
 	debug("setting file name mask to " + filenamemask);
 	this.FileNameMask = filenamemask;
 	return this;
@@ -62,7 +67,6 @@ function breadthFirstSearch ()
 	var mask      = this.FileNameMask;
 	var locations = [this.RoutesRootDir];
 	var results   = [];
-	var currentFolder;
 
 	function searchFolder (folder)
 	{
@@ -77,15 +81,14 @@ function breadthFirstSearch ()
 			}
 			else if ((stats.isFile()) && (mask.test(item)))
 			{
-				results.push(makeRoute(item, itemPath));
+				results.push(makeRoute(mask, item, itemPath));
 			}
 		});
 	};
 
 	while (locations.length > 0)
 	{
-		currentFolder = locations.shift();
-		searchFolder(currentFolder);
+		searchFolder(locations.shift());
 	}
 
 	return results;
@@ -97,7 +100,8 @@ function depthFirstSearch ()
 
 	function searchFolder (folder)
 	{
-		var results = [];
+		var results  = [];
+		var fresults = [];
 
 		fs.readdirSync(folder).forEach(function (item)
 		{
@@ -106,21 +110,26 @@ function depthFirstSearch ()
 
 			if (stats.isDirectory())
 			{
-				results.push(searchFolder(itemPath));
+				var dresults = searchFolder(itemPath);
+				results.push.apply(results, dresults);
 			}
 			else if ((stats.isFile()) && (mask.test(item)))
 			{
-				results.push(makeRoute(item, itemPath));
+				fresults.push(makeRoute(mask, item, itemPath));
 			}
 		});
+
+		results.push.apply(results, fresults);
+
+		return results;
 	};
 
 	return searchFolder(this.RoutesRootDir);
 }
 
-function makeRoute (filename, filepath)
+function makeRoute (mask, filename, filepath)
 {
-	var route = filename.replace(/^index\./, '').replace(/\.?routes?\.js$/i, '');
+	var route = filename.replace(mask, '').replace(/^index\.?/, '');
 
 	// change dots to slashes
 	if (route.indexOf('.') > 0)	route = route.replace(/\./g, '/');
