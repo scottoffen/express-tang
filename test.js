@@ -8,7 +8,6 @@ chai.should();
 
 var RouteFinder = require('./index.js');
 
-
 describe("express-tang", function ()
 {
 	var tang, routeCount = 0;
@@ -198,7 +197,6 @@ describe("express-tang", function ()
 });
 
 
-/* express application stub */
 function TestHarness ()
 {
 	this.routes = [];
