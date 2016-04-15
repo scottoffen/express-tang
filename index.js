@@ -7,7 +7,7 @@ module.exports = RouteFinder;
 function RouteFinder ()
 {
 	this.FileNameMask  = /\.routes?\.js$/i;
-	this.RoutesRootDir = null;
+	this.RoutesRootDir = path.dirname(require.main.filename);
 	this.SearchType = RouteFinder.SearchType.breadthFirst;
 }
 

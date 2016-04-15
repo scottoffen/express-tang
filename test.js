@@ -79,13 +79,6 @@ describe("express-tang", function ()
 			expect(erfunc).to.throw(errmsg);
 		});
 
-		it("should throw an exception if no root directory was provided", function ()
-		{
-			var errmsg = "path must be a string";
-			var erfunc = function () { tang.register(app); };
-			expect(erfunc).to.throw(errmsg);
-		});
-
 		it("should throw an exeption if SearchType is invalid", function ()
 		{
 			var invalid_value = "bubba";
@@ -144,9 +137,9 @@ describe("express-tang", function ()
 
 	describe("RoutesRootDir", function ()
 	{
-		it("doesn't have a default value", function ()
+		it("defaults to the application root directory", function ()
 		{
-			expect(tang.RoutesRootDir).to.not.exist;
+			expect(tang.RoutesRootDir).to.equal(path.dirname(require.main.filename));
 		});
 
 		it("should change when setRootDir is called with a valid, accessible directory", function ()
