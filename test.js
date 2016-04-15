@@ -6,11 +6,11 @@ var chai = require('chai');
 var expect = chai.expect;
 chai.should();
 
-var RouteFinder = require('./index.js');
+var tang = require('./index.js');
 
 describe("express-tang", function ()
 {
-	var tang, routeCount = 0;
+	var routeCount = 0;
 	var rootdir = path.join(__dirname, "tmp");
 	var fnmask = /\.miss.js$/i
 
@@ -36,7 +36,7 @@ describe("express-tang", function ()
 
 	beforeEach(function ()
 	{
-		tang = new RouteFinder();
+		tang.reset();
 	});
 
 	describe("FileNameMask", function ()
@@ -83,53 +83,53 @@ describe("express-tang", function ()
 		{
 			var invalid_value = "bubba";
 			var errmsg  = "express-route-finder invalid search type (" + invalid_value + "), use RouteFinder.SearchType enum";
-			var erfunc = function () { tang.SearchType = invalid_value; tang.setRootDir(rootdir).register(app); };
+			var erfunc = function () { tang.SearchType = invalid_value; tang.setRoutesDir(rootdir).register(app); };
 			expect(erfunc).to.throw(errmsg);
 		});
 
 		it("should search for routes using breadth first", function()
 		{
-			tang.setRootDir(rootdir).register(app);
+			tang.setRoutesDir(rootdir).register(app);
 			expect(app.routes.length).to.equal(routeCount);
 			expect(app.routes[0].route).to.equal("/bf01");
 		});
 
 		it("should search for routes using depth first", function()
 		{
-			tang.setSearchType("depthFirst").setRootDir(rootdir).register(app);
+			tang.setSearchType("depthFirst").setRoutesDir(rootdir).register(app);
 			expect(app.routes.length).to.equal(routeCount);
 			expect(app.routes[0].route).to.equal("/df01");
 		});
 
 		it("should only add files that match the file name mask", function()
 		{
-			tang.setFileNameMask(/\.miss\.js$/i).setRootDir(rootdir).register(app);
+			tang.setFileNameMask(/\.miss\.js$/i).setRoutesDir(rootdir).register(app);
 			expect(app.routes.length).to.equal(1);
 			expect(app.routes[0].route).to.equal("/rm01");
 		});
 
 		it("should search only in the directory specified", function()
 		{
-			tang.setRootDir(path.join(rootdir, "df01")).register(app);
+			tang.setRoutesDir(path.join(rootdir, "df01")).register(app);
 			expect(app.routes.length).to.equal(1);
 			expect(app.routes[0].route).to.equal("/df01");
 		});
 
 		it("should change dots to slashes", function ()
 		{
-			tang.setRootDir(rootdir).register(app);
+			tang.setRoutesDir(rootdir).register(app);
 			expect(app.routes[2].route).to.equal("/x/api/slashes");
 		});
 
 		it("should change dashes to camelCase", function ()
 		{
-			tang.setRootDir(rootdir).register(app);
+			tang.setRoutesDir(rootdir).register(app);
 			expect(app.routes[3].route).to.equal("/x/api/userAccounts");
 		});
 
 		it("should strip index off the file name for the route", function ()
 		{
-			tang.setRootDir(rootdir).register(app);
+			tang.setRoutesDir(rootdir).register(app);
 			expect(app.routes.length).to.equal(routeCount);
 			expect(app.routes[1].route).to.equal("/");
 		});
@@ -142,17 +142,17 @@ describe("express-tang", function ()
 			expect(tang.RoutesRootDir).to.equal(path.dirname(require.main.filename));
 		});
 
-		it("should change when setRootDir is called with a valid, accessible directory", function ()
+		it("should change when setRoutesDir is called with a valid, accessible directory", function ()
 		{
-			tang.setRootDir(rootdir);
+			tang.setRoutesDir(rootdir);
 			expect(tang.RoutesRootDir).to.equal(rootdir);
 		});
 
-		it("should throw an exception when setRootDir is called without a valid, accessible directory", function ()
+		it("should throw an exception when setRoutesDir is called without a valid, accessible directory", function ()
 		{
 			var invalid_path = path.join(__dirname, "x");
 			var errmsg  = "ENOENT: no such file or directory, access '" + invalid_path + "'";
-			var erfunc = function () { tang.setRootDir(invalid_path); };
+			var erfunc = function () { tang.setRoutesDir(invalid_path); };
 			expect(erfunc).to.throw(errmsg);
 		});
 	});
@@ -165,12 +165,6 @@ describe("express-tang", function ()
 		it("should default to breadth first search", function ()
 		{
 			expect(tang.SearchType).to.equal(bfirst);
-		});
-
-		it("should change when setSearchType is called using RouteFinder.SearchType enum", function ()
-		{
-			tang.setSearchType(RouteFinder.SearchType.depthFirst);
-			expect(tang.SearchType).to.equal(dfirst);
 		});
 
 		it("should change when setSearchType is called using a valid string", function ()

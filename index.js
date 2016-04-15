@@ -2,13 +2,18 @@ var debug = require('debug')('express-route-finder');
 var path = require('path');
 var fs   = require('fs');
 
-module.exports = RouteFinder;
+var defaults =
+{
+	FileNameMask  : /\.routes?\.js$/i,
+	RoutesRootDir : path.dirname(require.main.filename),
+	SearchType    : "breadthFirst"
+};
 
 function RouteFinder ()
 {
-	this.FileNameMask  = /\.routes?\.js$/i;
-	this.RoutesRootDir = path.dirname(require.main.filename);
-	this.SearchType = RouteFinder.SearchType.breadthFirst;
+	this.FileNameMask  = defaults.FileNameMask;
+	this.RoutesRootDir = defaults.RoutesRootDir;
+	this.SearchType    = defaults.SearchType;
 }
 
 RouteFinder.SearchType =
@@ -21,7 +26,7 @@ RouteFinder.prototype.register = function (app)
 {
 	if (!app || typeof app.add === 'undefined') throw "express-route-finder: Missing required parameter: app (express application)";
 
-	this.setRootDir(this.RoutesRootDir);
+	this.setRoutesDir(this.RoutesRootDir);
 	this.setFileNameMask(this.FileNameMask);
 	this.setSearchType(this.SearchType);
 
@@ -38,7 +43,7 @@ RouteFinder.prototype.register = function (app)
 	});
 };
 
-RouteFinder.prototype.setRootDir = function (rootdir)
+RouteFinder.prototype.setRoutesDir = function (rootdir)
 {
 	fs.accessSync(rootdir, fs.R_OK);
 	debug("setting root search directory to " + rootdir);
@@ -61,6 +66,13 @@ RouteFinder.prototype.setSearchType = function (searchtype)
 	this.SearchType = searchtype;
 	return this;
 };
+
+RouteFinder.prototype.reset = function ()
+{
+	this.FileNameMask  = defaults.FileNameMask;
+	this.RoutesRootDir = defaults.RoutesRootDir;
+	this.SearchType    = defaults.SearchType;
+}
 
 function breadthFirstSearch ()
 {
@@ -139,3 +151,5 @@ function makeRoute (mask, filename, filepath)
 
 	return { route : '/' + route, path : filepath };
 }
+
+module.exports = new RouteFinder();
