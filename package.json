@@ -1,7 +1,7 @@
 {
   "name": "express-tang",
   "version": "1.0.0",
-  "description": "Simple express routing helper library",
+  "description": "Convention-based automatic Express application route discovery and mounting",
   "main": "index.js",
   "scripts": {
     "test": "istanbul cover node_modules/mocha/bin/_mocha -- -R spec"
@@ -12,6 +12,8 @@
   },
   "keywords": [
     "express",
+    "automatic",
+    "discovery",
     "routing"
   ],
   "author": "Scott Offen",
@@ -26,6 +28,6 @@
     "mocha": "^2.4.5"
   },
   "dependencies": {
-    "debug": "^2.2.0"
+    "debug": "2.2.0"
   }
 }
