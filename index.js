@@ -39,7 +39,7 @@ RouteFinder.prototype.register = function (app)
 	routes.forEach(function (item)
 	{
 		debug("adding route: " + item.route);
-		app.use(item.route, item.path);
+		app.use(item.route, require(item.path));
 	});
 };
 
