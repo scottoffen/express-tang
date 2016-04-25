@@ -1,6 +1,6 @@
 {
   "name": "express-tang",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Convention-based automatic Express application route discovery and mounting",
   "main": "index.js",
   "scripts": {
