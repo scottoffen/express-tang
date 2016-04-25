@@ -135,17 +135,17 @@ describe("express-tang", function ()
 		});
 	});
 
-	describe("RoutesRootDir", function ()
+	describe("RoutesDir", function ()
 	{
 		it("defaults to the application root directory", function ()
 		{
-			expect(tang.RoutesRootDir).to.equal(path.dirname(require.main.filename));
+			expect(tang.RoutesDir).to.equal(path.dirname(require.main.filename));
 		});
 
 		it("should change when setRoutesDir is called with a valid, accessible directory", function ()
 		{
 			tang.setRoutesDir(rootdir);
-			expect(tang.RoutesRootDir).to.equal(rootdir);
+			expect(tang.RoutesDir).to.equal(rootdir);
 		});
 
 		it("should throw an exception when setRoutesDir is called without a valid, accessible directory", function ()

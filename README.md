@@ -7,67 +7,42 @@ express-[tang](https://translate.google.com/#th/en/%E0%B8%97%E0%B8%B2%E0%B8%87)
 $ npm install express-tang --save
 ```
 
-In an ideal world, the majority of feature additions or changes to a Node/Express application should not require a developer to modify the application start up or configuration scripts. This will greatly increase the maintainability of your application. This module will facilitate that ideal by automatically discovering the JavaScript files containing your routes and mounting them for you.
+express-tang automatically discovers JavaScript files containing your routes and mounts them to your Express application.
 
 ## Usage ##
 
-This example includes using `body-parser`, `cookie-parser` and `express-static`, just to give you an idea of where in your application you want to use this module.
-
 ```javascript
-var express = require('express');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
-var tang = require('express-tang');
+// instead of using multiple use statements
+app.use('/', './routes/index.js');
+app.use('/api/books', './routes/books.js');
+app.use('/api/users', './routes/users.js');
 
-var app  = express();
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(global.app.paths.public));
-
+// You can just do this
 tang.register(app);
 ```
 
+**BUT you must follow the convention for this to work!**
+
 ## Conventions ##
 
-`express-tang` doesn't care where your JavaScript route files are located in your project. Instead, it relies on a simple naming convention for those files.
+You can leave your routes where you see fit in your application directory, because `express-tang` doesn't care. Instead, it relies on a few simple naming conventions that you need to follow for the files that contain your routes.
 
-Instead of this:
+### Default Conventions ###
 
-```javascript
-app.use('/user', '../routes/user.js');
-```
-
-You would name the file `user.route.js`, and `express-tang` would handle mounting the routes for you.
-
-### A Forgiving Convention ###
-
-To make the convention easy to use, `express-tang` will, by default, find all text files ending in `.route.js` OR `.routes.js`. It's okay if you accidentally use the plural - or if you do it on purpose because that feels more appropriate in your context.
-
-### Dashes to camelCase ###
-
-Any dashes (-) found in the file name will be replace with camel casing. So, if your file is named `user-accounts.routes.js`, `express-tang` will mount that file using the path `/userAccounts`.
-
-### Dots to Forward Slashes ###
-
-Any dots (.) found in the file name will be replace with a forward slash. So, if your file is named `api.users.routes.js`, `express-tang` will mount that file using the path `/api/users`.
-
-### Indexing ###
-
-if you want to mount directly on the root, just name your file `index.routes.js`. `express-tang` will mount that file using the path `/`.
+- Any text file ending in `.route.js` or `.routes.js` will be considered a route
+- Any dashes (-) found in the file name will be replaced with camel casing
+- Any dots (.) found in the file name will be replace with a forward slash
+- Files prefixed with `index` will be mounted at `/`
 
 ### Examples ###
 
-Example File Structure
+Given the following file structure
 
 ```
-├── app
-│   └── routes
-│       ├── index.routes.js
-│       ├── api.user-accounts.routes.js
-│       └── api.users.routes.js
-└── node_mdoules
+└── someFolder
+    ├── index.routes.js
+    ├── api.books-in-library.routes.js
+    └── api.users.routes.js
 ```
 
 Using:
@@ -79,44 +54,42 @@ tang.register(app);
 Would be equivalent to:
 
 ```javascript
-app.use('/', './routes/index.routes.js');
-app.use('/api/userAccounts', './routes/api.user-accounts.routes.js');
-app.use('/api/users', './routes/api.users.routes.js');
+app.use('/', 'someFolder/index.routes.js');
+app.use('/api/booksInLibrary', 'someFolder/api.books-in-library.routes.js');
+app.use('/api/users', 'someFolder/api.users.routes.js');
 ```
 
 The more route files you have, the bigger the benefit you get from using `express-tang`.
 
 ## Configuration ##
 
-To maximize your mileage and satisfaction, the default values used by `express-tang` can be overridden by either setting the properties directly, or via the chainable setter methods.
+To maximize your mileage and satisfaction, the default values used by `express-tang` can be overridden by either setting the properties directly, or via the setter methods.
 
-| Property      | Setter Method             | Default Value       |
-|---------------|---------------------------|---------------------|
-| FileNameMask  | `setFileNameMask(RegExp)` | `/\.routes?\.js$/i` |
-| RoutesRootDir | `setRoutesDir(Path)`      | application root    |
-| SearchType    | `setSearchType(enum)`     | `breadthFirst`      |
+| Property     | Setter Method             | Default Value       |
+|--------------|---------------------------|---------------------|
+| FileNameMask | `setFileNameMask(RegExp)` | `/\.routes?\.js$/i` |
+| RoutesDir    | `setRoutesDir(Path)`      | application root    |
+| SearchType   | `setSearchType(string)`   | `breadthFirst`      |
 
 ### File Name Mask ###
 
 *Regular Expression Object*
 
-What, you don't like my file name convention? Make your own! This property is the regular expression used to match files that should be included as routes. 
+What, you don't like my file name convention? Make your own! This property is the regular expression used to match files that should be included as routes. Just remember that the file name mask you use will be removed from the file name before converting it to a path.
 
 ```javascript
 tang.FileNameMask = /\.feature.route\.js$/i;
 tang.setFileNameMax(/\.feature.route\.js$/i);
 ```
 
-Just remember that the file name mask you use will be removed from the file name before converting it to a path.
-
 ### Routes Root Directory ###
 
-*Any valid folder accessible to the applicatioin*
+*Any valid folder accessible to the application*
 
 By default, `express-tang` will use `require.main.filename` to determine where to start searching for matching files. You can provide a path if this default doesn't meet your needs.
 
 ```javascript
-tang.RoutesRootDir = 'path/to/app/routes';
+tang.RoutesDir = 'path/to/app/routes';
 tang.setRoutesDir('path/to/app/routes');
 ```
 
@@ -124,30 +97,45 @@ tang.setRoutesDir('path/to/app/routes');
 
 *Must be either `breadthFirst` or `depthFirst`.*
 
-Since the routes will be added in the order they are found, you might want to control how `express-tang` searches for them. By default, it will use a breadth-first approach, which means the files found higher in the tree structure will be added first - even if they are in different branches. You can change it to a depth-first search if that better suits your needs.
+Since the routes will be added in the order they are found, you might want to control how `express-tang` searches for them. By default, it will use a [breadth-first](https://en.wikipedia.org/wiki/Breadth-first_search) approach, which means the files found higher in the tree structure will be added first - even if they are in different branches. You can change it to a [depth-first](https://en.wikipedia.org/wiki/Depth-first_search) search if that better suits your needs.
 
 ```javascript
 tang.SearchType = 'depthFirst';
 tang.setSearchType('depthFirst');
 ```
 
-### The Benefits of the Fluent Interface ###
+### Chainable Methods ###
 
-Aside for the ability to chain methods:
+All methods are chainable.
 
 ```javascript
 tang.setSearchType('depthFirst').setRoutesDir('../app/features').register(app);
 ```
 
-Another benefit of using the fluent interface setters is that the input provided gets validated *before* the `.register()` method is called.
+### Exceptions ###
+
+Exceptions will be thrown if the values provided are invalid.
 
 ```javascript
-tang.setSearchType('sistersBeforeMisters');             // will throw an exception
+tang.setSearchType('widthFirst');                       // will throw an exception
 tang.setRoutesDir('../invalid/or/inaccessible/folder'); // will throw an exception
 tang.setFileNameMask("Not a regular expression");       // will throw an exception
-tang.register(app);
+```
+
+Think you can get around this by setting the properties directly? Think again!
+
+```javascript
+tang.SearchType = 'widthFirst';
+tang.RoutesDir = '../invalid/or/inaccessible/folder';
+tang.FileNameMask = "Not a regular expression";
+tang.register(app); // will throw an exception
+```
+
+An exception will also be thrown if a valid express application is not provided.
+```javascript
+tang.register(); // will throw an exception
 ```
 
 ## Notes ##
 
-Your application file structure is intentionally traversed **synchronously**, because you don't want the application to continue starting up until all the routes have been added. While this *might* cause your application to take longer to start up, it's a one-time hit, and the benefit is in preventing someone from clobbering your express configuration.
+Your application file structure is intentionally traversed **synchronously**, because you don't want the application to continue starting up until all the routes have been added. This *might* cause your application to take longer to start up, but not by a noticeable amount of time.

@@ -5,14 +5,14 @@ var fs   = require('fs');
 var defaults =
 {
 	FileNameMask  : /\.routes?\.js$/i,
-	RoutesRootDir : path.dirname(require.main.filename),
+	RoutesDir : path.dirname(require.main.filename),
 	SearchType    : "breadthFirst"
 };
 
 function RouteFinder ()
 {
 	this.FileNameMask  = defaults.FileNameMask;
-	this.RoutesRootDir = defaults.RoutesRootDir;
+	this.RoutesDir = defaults.RoutesDir;
 	this.SearchType    = defaults.SearchType;
 }
 
@@ -26,7 +26,7 @@ RouteFinder.prototype.register = function (app)
 {
 	if (!app || typeof app.use !== 'function') throw "express-route-finder: Missing required parameter: app (express application)";
 
-	this.setRoutesDir(this.RoutesRootDir);
+	this.setRoutesDir(this.RoutesDir);
 	this.setFileNameMask(this.FileNameMask);
 	this.setSearchType(this.SearchType);
 
@@ -47,7 +47,7 @@ RouteFinder.prototype.setRoutesDir = function (rootdir)
 {
 	fs.accessSync(rootdir, fs.R_OK);
 	debug("setting root search directory to " + rootdir);
-	this.RoutesRootDir = rootdir;
+	this.RoutesDir = rootdir;
 	return this;
 };
 
@@ -70,14 +70,14 @@ RouteFinder.prototype.setSearchType = function (searchtype)
 RouteFinder.prototype.reset = function ()
 {
 	this.FileNameMask  = defaults.FileNameMask;
-	this.RoutesRootDir = defaults.RoutesRootDir;
+	this.RoutesDir = defaults.RoutesDir;
 	this.SearchType    = defaults.SearchType;
 }
 
 function breadthFirstSearch ()
 {
 	var mask      = this.FileNameMask;
-	var locations = [this.RoutesRootDir];
+	var locations = [this.RoutesDir];
 	var results   = [];
 
 	function searchFolder (folder)
@@ -136,7 +136,7 @@ function depthFirstSearch ()
 		return results;
 	};
 
-	return searchFolder(this.RoutesRootDir);
+	return searchFolder(this.RoutesDir);
 }
 
 function makeRoute (mask, filename, filepath)
