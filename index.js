@@ -24,7 +24,7 @@ RouteFinder.SearchType =
 
 RouteFinder.prototype.register = function (app)
 {
-	if (!app || typeof app.add === 'undefined') throw "express-route-finder: Missing required parameter: app (express application)";
+	if (!app || typeof app.use !== 'function') throw "express-route-finder: Missing required parameter: app (express application)";
 
 	this.setRoutesDir(this.RoutesRootDir);
 	this.setFileNameMask(this.FileNameMask);
@@ -39,7 +39,7 @@ RouteFinder.prototype.register = function (app)
 	routes.forEach(function (item)
 	{
 		debug("adding route: " + item.route);
-		app.add(item.route, item.path);
+		app.use(item.route, item.path);
 	});
 };
 

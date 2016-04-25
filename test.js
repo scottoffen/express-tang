@@ -189,7 +189,7 @@ function TestHarness ()
 	this.routes = [];
 };
 
-TestHarness.prototype.add = function (route, jspath)
+TestHarness.prototype.use = function (route, jspath)
 {
 	this.routes.push({ route: route, path: jspath });
 };
