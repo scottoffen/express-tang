@@ -3,6 +3,8 @@ express-[tang](https://translate.google.com/#th/en/%E0%B8%97%E0%B8%B2%E0%B8%87)
 
 *Convention-based automatic Express application route discovery and mounting*
 
+[![NPM](https://nodei.co/npm/express-tang.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/express-tang/)
+
 ```
 $ npm install express-tang --save
 ```
